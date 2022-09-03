@@ -1,0 +1,1 @@
+export type ViewModel<M> = { error: string } | M

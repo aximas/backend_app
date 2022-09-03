@@ -1,6 +1,7 @@
 import request from 'supertest';
-import {app, HTTP_STATUSES} from '../../src';
+import {app, HTTP_STATUSES, Users} from '../../src';
 import {STATUS_CODES} from 'http';
+import {UserCreateModel} from 'Models/create.model';
 
 describe('/test api', () => {
     beforeAll(async () => {
@@ -20,9 +21,10 @@ describe('/test api', () => {
         await request(app).get('/users').expect(HTTP_STATUSES.OK_200, []);
     });
 
-    let _createdUser: {  id: number, name: string } = {id: 0, name: ''};
+    let _createdUser: Users = {id: 0, name: ''};
     it('should create user with correct input data', async () => {
-        const createResponse = await request(app).post('/user').send({name: 'Alex'}).expect(HTTP_STATUSES.CREATED_201);
+        const data: UserCreateModel = {name: 'Alex'}
+        const createResponse = await request(app).post('/user').send(data).expect(HTTP_STATUSES.CREATED_201);
         _createdUser = createResponse.body;
 
         expect(_createdUser).toEqual({

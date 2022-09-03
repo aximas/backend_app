@@ -1,4 +1,8 @@
-import express from 'express';
+import express, {Response} from 'express';
+import {RequestWithBody, RequestWithParams, RequestWithParamsAndBody} from './types';
+import {UserCreateModel} from 'Models/create.model';
+import {UserUpdateModel} from 'Models/update.model';
+import {ViewModel} from 'Models/view.model';
 
 export const app = express();
 const port = 4000;
@@ -15,7 +19,12 @@ export const HTTP_STATUSES = {
 const JsonBodyMiddleware = express.json();
 app.use(JsonBodyMiddleware);
 
-const db = {
+export type Users = {
+    id: number,
+    name: string
+}
+
+const db: { users: Users[] } = {
     users: [
         {id: 1, name: 'Rava'},
         {id: 2, name: 'Anvar'},
@@ -24,12 +33,12 @@ const db = {
     ]
 };
 
-app.get('/users', (req, res) => {
+app.get('/users', (req, res: Response<ViewModel<Users[]>>) => {
 
     res.status(HTTP_STATUSES.OK_200).json(db.users);
 });
 
-app.get('/user/:id', (req, res) => {
+app.get('/user/:id', (req: RequestWithParams<UriParamsModel>, res: Response<ViewModel<Users[]>>) => {
     const userId = +req.params.id;
 
     if (!userId) res.status(HTTP_STATUSES.NOT_FOUND_404).json({error: 'user id not found as uri parameter'});
@@ -39,7 +48,7 @@ app.get('/user/:id', (req, res) => {
     res.status(HTTP_STATUSES.OK_200).json(foundUsers);
 });
 
-app.post('/user', async (req, res) => {
+app.post('/user', async (req: RequestWithBody<UserCreateModel>, res: Response<ViewModel<Users>>) => {
     const userName = req.body.name;
     if (!userName) return res.status(HTTP_STATUSES.BAD_REQUEST_400).json({error: 'name in body is not exited'});
 
@@ -51,7 +60,7 @@ app.post('/user', async (req, res) => {
     res.status(HTTP_STATUSES.CREATED_201).json(createdUser);
 });
 
-app.put('/user/:id', (req, res) => {
+app.put('/user/:id', (req: RequestWithParamsAndBody<UriParamsModel, UserUpdateModel>, res: Response<ViewModel<Users>>) => {
     const userName = req.body.name;
     const userId = +req.params.id;
 
@@ -66,7 +75,7 @@ app.put('/user/:id', (req, res) => {
     res.status(HTTP_STATUSES.CREATED_201).json(foundUser);
 });
 
-app.delete('/user/:id', (req, res) => {
+app.delete('/user/:id', (req: RequestWithParams<UriParamsModel>, res: Response) => {
     const userId = req.params.id;
 
     if (!userId) res.status(HTTP_STATUSES.BAD_REQUEST_400).json({error: 'unknown uri parameter'});
@@ -76,7 +85,7 @@ app.delete('/user/:id', (req, res) => {
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
 });
 
-app.delete('/__test__/data', (req, res) => {
+app.delete('/__test__/data', (req, res: Response) => {
     db.users = [];
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
 });
